@@ -9,7 +9,7 @@ from telethon.tl.functions.messages import (GetHistoryRequest)
 from telethon.tl.types import (
     PeerChannel
 )
-
+import re
 
 # some functions to parse json date
 class DateTimeEncoder(json.JSONEncoder):
@@ -62,13 +62,13 @@ async def main(phone):
     my_channel = await client.get_entity(entity)
 
     offset_id = 0
-    limit = 100
+    limit = 1
     all_messages = []
     total_messages = 0
-    total_count_limit = 0
+    total_count_limit = 1
 
     while True:
-        print("Current Offset ID is:", offset_id, "; Total Messages:", total_messages)
+        #print("Current Offset ID is:", offset_id, "; Total Messages:", total_messages)
         history = await client(GetHistoryRequest(
             peer=my_channel,
             offset_id=offset_id,
@@ -85,12 +85,14 @@ async def main(phone):
         for message in messages:
             all_messages.append(message.to_dict())
         offset_id = messages[len(messages) - 1].id
-        total_messages = len(all_messages)
+        total_messages = len(all_messages)       
+        all_messagesgr =  re.search(f'$[BCGAME(.)$',all_messages)
+        print(all_messagesgr)
         if total_count_limit != 0 and total_messages >= total_count_limit:
             break
-
     with open('channel_messages.json', 'w') as outfile:
         json.dump(all_messages, outfile, cls=DateTimeEncoder)
+    
 
 with client:
     client.loop.run_until_complete(main(phone))
